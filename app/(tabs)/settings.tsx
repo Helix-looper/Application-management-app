@@ -8,6 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import {
@@ -219,6 +220,25 @@ export default function SettingsScreen() {
             Data & Privacy
           </Text>
           <Card style={{ padding: Spacing.base, gap: Spacing.md }}>
+            <View style={styles.dataActionRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={[Typography.bodyMedium, { color: colors.textPrimary, fontWeight: '600' }]}>
+                  Resume Library
+                </Text>
+                <Text style={[Typography.secondary, { color: colors.textSecondary, marginTop: 2 }]}>
+                  Manage tailored PDF and Word resumes stored in your local library.
+                </Text>
+              </View>
+              <Button
+                label="Manage"
+                variant="secondary"
+                size="sm"
+                onPress={() => router.push('/resumes')}
+              />
+            </View>
+
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
             <View style={styles.dataActionRow}>
               <View style={{ flex: 1 }}>
                 <Text style={[Typography.bodyMedium, { color: colors.textPrimary, fontWeight: '600' }]}>

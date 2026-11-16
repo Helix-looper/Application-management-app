@@ -18,6 +18,7 @@ import {
   Video,
   Clock,
   Briefcase,
+  BarChart2,
 } from 'lucide-react-native';
 import dayjs from 'dayjs';
 import { useTheme } from '@/theme/ThemeContext';
@@ -137,13 +138,22 @@ export default function DashboardScreen() {
               Here's your job search overview.
             </Text>
           </View>
-          <TouchableOpacity
-            style={[styles.addBtn, { backgroundColor: colors.accent }]}
-            onPress={() => router.push('/applications/new')}
-            activeOpacity={0.8}
-          >
-            <Plus size={20} color="#FFFFFF" strokeWidth={2.5} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm }}>
+            <TouchableOpacity
+              style={[styles.addBtn, { backgroundColor: colors.surface2, borderColor: colors.border, borderWidth: 1 }]}
+              onPress={() => router.push('/analytics')}
+              activeOpacity={0.8}
+            >
+              <BarChart2 size={18} color={colors.textPrimary} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.addBtn, { backgroundColor: colors.accent }]}
+              onPress={() => router.push('/applications/new')}
+              activeOpacity={0.8}
+            >
+              <Plus size={20} color="#FFFFFF" strokeWidth={2.5} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {!isDbReady ? (
