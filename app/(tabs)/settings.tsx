@@ -214,7 +214,32 @@ export default function SettingsScreen() {
           </Card>
         </View>
 
-        {/* Section 2: Data Management */}
+        {/* Section 2: Desktop Companion */}
+        <View style={styles.section}>
+          <Text style={[Typography.sectionHeading, { color: colors.textPrimary, marginBottom: Spacing.sm }]}>
+            Desktop Companion
+          </Text>
+          <Card style={{ padding: Spacing.base }}>
+            <View style={styles.dataActionRow}>
+              <View style={{ flex: 1, marginRight: Spacing.sm }}>
+                <Text style={[Typography.bodyMedium, { color: colors.textPrimary, fontWeight: '600' }]}>
+                  Wi-Fi Direct Sync
+                </Text>
+                <Text style={[Typography.secondary, { color: colors.textSecondary, marginTop: 2 }]}>
+                  Exchange applications and status updates with the JobPilot Desktop Web Companion over local Wi-Fi.
+                </Text>
+              </View>
+              <Button
+                label="Sync"
+                variant="primary"
+                size="sm"
+                onPress={() => router.push('/sync')}
+              />
+            </View>
+          </Card>
+        </View>
+
+        {/* Section 3: Data Management */}
         <View style={styles.section}>
           <Text style={[Typography.sectionHeading, { color: colors.textPrimary, marginBottom: Spacing.sm }]}>
             Data & Privacy

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "sync": "node sync-server.js",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

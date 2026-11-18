@@ -8,6 +8,7 @@ import QuickAdd from '@/pages/QuickAdd';
 import Companies from '@/pages/Companies';
 import ImportExport from '@/pages/ImportExport';
 import Settings from '@/pages/Settings';
+import Sync from '@/pages/Sync';
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/applications/:id" element={<ApplicationDetail />} />
           <Route path="/quick-add" element={<QuickAdd />} />
           <Route path="/companies" element={<Companies />} />
+          <Route path="/sync" element={<Sync />} />
           <Route path="/import" element={<ImportExport />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>

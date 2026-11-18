@@ -1,8 +1,8 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, Zap, Building2,
-  FileDown, Settings, ChevronRight
+  FileDown, Settings, Wifi
 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -11,6 +11,7 @@ const NAV = [
   { to: '/applications', icon: Briefcase,       label: 'Applications' },
   { to: '/quick-add',  icon: Zap,              label: 'Quick Add', accent: true },
   { to: '/companies',  icon: Building2,         label: 'Companies' },
+  { to: '/sync',       icon: Wifi,              label: 'Wi-Fi Sync' },
   { to: '/import',     icon: FileDown,          label: 'Import / Export' },
   { to: '/settings',   icon: Settings,          label: 'Settings' },
 ];
