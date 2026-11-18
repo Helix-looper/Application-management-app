@@ -8,28 +8,51 @@ export interface SyncResult {
   error?: string;
 }
 
+function normalizeUrl(input: string): string {
+  let url = input.trim();
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `http://${url}`;
+  }
+  return url.replace(/\/+$/, '');
+}
+
 export async function pairWithDesktop(
   desktopUrl: string,
   pin: string
 ): Promise<{ success: boolean; token?: string; error?: string }> {
-  try {
-    const formattedUrl = desktopUrl.startsWith('http') ? desktopUrl : `http://${desktopUrl}`;
-    const cleanUrl = formattedUrl.replace(/\/+$/, '');
+  const cleanUrl = normalizeUrl(desktopUrl);
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+  try {
     const res = await fetch(`${cleanUrl}/api/pair`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pin }),
+      signal: controller.signal,
     });
 
-    const data = await res.json();
+    clearTimeout(timeoutId);
+
+    const data = await res.json().catch(() => ({}));
     if (res.ok && data.ok) {
       return { success: true, token: data.token };
     } else {
-      return { success: false, error: data.error || 'Failed to authenticate PIN' };
+      return { success: false, error: data.error || `Authentication failed (HTTP ${res.status})` };
     }
   } catch (err: any) {
-    return { success: false, error: 'Could not connect to desktop. Ensure both devices are on the same Wi-Fi network.' };
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      return {
+        success: false,
+        error: `Connection timed out reaching ${cleanUrl}. Check if your desktop companion is running.`,
+      };
+    }
+    return {
+      success: false,
+      error: `Could not reach ${cleanUrl}: ${err.message || 'Network request failed'}. Ensure both devices are on the same Wi-Fi.`,
+    };
   }
 }
 
@@ -37,11 +60,13 @@ export async function syncWithDesktop(
   desktopUrl: string,
   token: string
 ): Promise<SyncResult> {
-  try {
-    const formattedUrl = desktopUrl.startsWith('http') ? desktopUrl : `http://${desktopUrl}`;
-    const cleanUrl = formattedUrl.replace(/\/+$/, '');
+  const cleanUrl = normalizeUrl(desktopUrl);
 
-    // 1. Gather current mobile data directly from SQLite
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+  try {
+    // 1. Read current mobile data from SQLite
     const db = await getDatabase();
     const [companies, applications] = await Promise.all([
       db.getAllAsync<Company>('SELECT * FROM companies;'),
@@ -60,11 +85,14 @@ export async function syncWithDesktop(
         applications,
         companies,
       }),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       const errJson = await res.json().catch(() => ({}));
-      return { success: false, message: errJson.error || 'Sync request rejected' };
+      return { success: false, message: errJson.error || `Sync rejected with HTTP ${res.status}` };
     }
 
     const result = await res.json();
@@ -72,7 +100,7 @@ export async function syncWithDesktop(
       return { success: false, message: 'Invalid sync response from desktop' };
     }
 
-    // 3. Write received desktop applications & companies into Android SQLite
+    // 3. Upsert received desktop applications & companies into Android SQLite
     const desktopApps: Application[] = result.data.applications || [];
     const desktopCompanies: Company[] = result.data.companies || [];
 
@@ -122,6 +150,13 @@ export async function syncWithDesktop(
       importedCount,
     };
   } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      return {
+        success: false,
+        message: 'Sync request timed out. Please try again.',
+      };
+    }
     return {
       success: false,
       message: 'Network error during sync: ' + (err.message || 'Check your Wi-Fi connection.'),

@@ -12,6 +12,7 @@
     },
     "android": {
       "package": "com.jobpilot.app",
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#F7F7F2",
         "foregroundImage": "./assets/android-icon-foreground.png",

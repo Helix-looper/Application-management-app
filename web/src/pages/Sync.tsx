@@ -127,7 +127,8 @@ export default function Sync() {
     }
   };
 
-  const connectionUrl = status ? `http://${status.ip}:${status.port}` : '';
+  const activePort = window.location.port ? window.location.port : (status?.port || 5173);
+  const connectionUrl = status ? `http://${status.ip}:${activePort}` : '';
 
   const copyUrl = () => {
     if (connectionUrl) {

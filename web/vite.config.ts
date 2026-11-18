@@ -10,7 +10,8 @@ function syncBridgePlugin(): Plugin {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         if (req.url && req.url.startsWith('/api/')) {
-          const port = server.config.server.port || 5173;
+          const address = server.httpServer?.address();
+          const port = (typeof address === 'object' && address?.port) ? address.port : (server.config.server.port || 5173);
           const handled = await handleSyncRequest(req, res, port);
           if (handled) return;
         }
