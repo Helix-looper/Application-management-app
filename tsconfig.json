@@ -7,5 +7,9 @@
       "@/*": ["src/*"]
     },
     "ignoreDeprecations": "6.0"
-  }
+  },
+  "exclude": [
+    "web",
+    "node_modules"
+  ]
 }

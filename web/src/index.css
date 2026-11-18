@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+@theme {
+  /* JobPilot Light Theme Colors */
+  --color-jp-bg: #F7F7F2;
+  --color-jp-surface: #FFFFFF;
+  --color-jp-surface2: #F0F1EC;
+  --color-jp-text: #252B27;
+  --color-jp-secondary: #737B74;
+  --color-jp-border: #E5E8E2;
+  --color-jp-accent: #54745D;
+  --color-jp-accent2: #829B83;
+
+  /* Status colors */
+  --color-status-saved: #78827B;
+  --color-status-applied: #4F84B8;
+  --color-status-assessment: #B57C36;
+  --color-status-interview: #488A5C;
+  --color-status-offer: #2E7D52;
+  --color-status-rejected: #B84F4F;
+  --color-status-withdrawn: #7D8C83;
+
+  --color-status-saved-bg: #ECEEE9;
+  --color-status-applied-bg: #E8F1F9;
+  --color-status-assessment-bg: #FAF2E6;
+  --color-status-interview-bg: #E7F3EB;
+  --color-status-offer-bg: #E2F2E9;
+  --color-status-rejected-bg: #F9EAE9;
+  --color-status-withdrawn-bg: #ECEFEA;
+
+  /* Feedback */
+  --color-jp-error: #B84F4F;
+  --color-jp-success: #488A5C;
+  --color-jp-warning: #B57C36;
+
+  --font-family-sans: 'Inter', 'system-ui', -apple-system, sans-serif;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+/* Dark theme overrides */
+.dark {
+  --color-jp-bg: #191D1A;
+  --color-jp-surface: #222824;
+  --color-jp-surface2: #2A322D;
+  --color-jp-text: #EDF0EA;
+  --color-jp-secondary: #A1AAA1;
+  --color-jp-border: #363E38;
+  --color-jp-accent: #94B39A;
+  --color-jp-accent2: #78917B;
+
+  --color-status-saved: #9EA8A1;
+  --color-status-applied: #6B9BC7;
+  --color-status-assessment: #D49A4C;
+  --color-status-interview: #64AC7A;
+  --color-status-offer: #4EAA73;
+  --color-status-rejected: #C96565;
+  --color-status-withdrawn: #92A398;
+
+  --color-status-saved-bg: #28302A;
+  --color-status-applied-bg: #1D2E3C;
+  --color-status-assessment-bg: #362B1D;
+  --color-status-interview-bg: #1E3626;
+  --color-status-offer-bg: #1B3825;
+  --color-status-rejected-bg: #392121;
+  --color-status-withdrawn-bg: #252F28;
+
+  --color-jp-error: #C96565;
+  --color-jp-success: #64AC7A;
+  --color-jp-warning: #D49A4C;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-sans);
+  background: var(--color-jp-bg);
+  color: var(--color-jp-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-jp-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-jp-secondary);
+}
