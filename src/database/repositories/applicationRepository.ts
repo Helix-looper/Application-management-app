@@ -136,7 +136,7 @@ export async function createApplication(
         data.work_arrangement || null,
         data.salary_min !== undefined ? data.salary_min : null,
         data.salary_max !== undefined ? data.salary_max : null,
-        data.currency || 'USD',
+        data.currency || 'INR',
         data.status,
         data.source || null,
         data.recruiter_name || null,

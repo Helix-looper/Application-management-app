@@ -116,6 +116,33 @@ export default function Settings() {
               Switch to {theme === 'dark' ? 'Light' : 'Dark'}
             </button>
           </div>
+
+          <div style={{ height: '1px', background: 'var(--color-jp-border)', margin: '16px 0' }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--color-jp-text)' }}>Default Currency</div>
+              <div style={{ fontSize: '12px', color: 'var(--color-jp-text-muted)' }}>
+                Active currency for new applications, salary displays, and parsing
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                background: 'var(--color-jp-bg)',
+                border: '1px solid var(--color-jp-border)',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: 'var(--color-jp-text)',
+              }}
+            >
+              <span>INR (₹)</span>
+            </div>
+          </div>
         </section>
 
         {/* Data & Storage */}

@@ -33,7 +33,7 @@ export default function EditApplicationScreen() {
   const [location, setLocation] = useState('');
   const [salaryMin, setSalaryMin] = useState('');
   const [salaryMax, setSalaryMax] = useState('');
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState('INR');
   const [jobUrl, setJobUrl] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [recruiterName, setRecruiterName] = useState('');
@@ -51,7 +51,7 @@ export default function EditApplicationScreen() {
         setLocation(app.location || '');
         setSalaryMin(app.salary_min ? String(app.salary_min) : '');
         setSalaryMax(app.salary_max ? String(app.salary_max) : '');
-        setCurrency(app.currency || 'USD');
+        setCurrency(app.currency || 'INR');
         setJobUrl(app.job_url || '');
         setJobDescription(app.job_description || '');
         setRecruiterName(app.recruiter_name || '');

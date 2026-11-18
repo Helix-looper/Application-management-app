@@ -39,7 +39,7 @@ export async function migration_001(db: SQLite.SQLiteDatabase): Promise<void> {
       work_arrangement TEXT,
       salary_min REAL,
       salary_max REAL,
-      currency TEXT DEFAULT 'USD',
+      currency TEXT DEFAULT 'INR',
       status TEXT NOT NULL DEFAULT 'saved',
       source TEXT,
       recruiter_name TEXT,
@@ -132,7 +132,7 @@ export async function migration_001(db: SQLite.SQLiteDatabase): Promise<void> {
       ('default_view', 'list'),
       ('default_sort', 'newest'),
       ('date_format', 'MMM D, YYYY'),
-      ('currency', 'USD'),
+      ('currency', 'INR'),
       ('first_day_of_week', '0'),
       ('notifications_enabled', '1');
   `);

@@ -50,8 +50,8 @@ function parseSalary(text: string): { min?: number; max?: number; currency?: str
 
   const match = text.match(pattern);
   if (match) {
-    const sym = match[1] || match[3] || '$';
-    currency = CURRENCY_SYMBOLS[sym] ?? 'USD';
+    const sym = match[1] || match[3] || '₹';
+    currency = CURRENCY_SYMBOLS[sym] ?? 'INR';
     const rawMin = match[2].replace(/,/g, '');
     const rawMax = match[4]?.replace(/,/g, '');
     min = parseFloat(rawMin);
@@ -209,7 +209,7 @@ export function extractJobFromText(text: string, url?: string): ExtractedJob {
   if (salaryMatch?.min) {
     result.salary_min = salaryMatch.min;
     result.salary_max = salaryMatch.max;
-    result.currency = salaryMatch.currency ?? 'USD';
+    result.currency = salaryMatch.currency ?? 'INR';
     result.confidence.salary = salarySection ? 'high' : 'medium';
   }
 

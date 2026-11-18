@@ -36,19 +36,25 @@ export function formatRelative(date: string | Date | null | undefined): string {
   return `${Math.floor(diffDays / 365)}y ago`;
 }
 
-export function formatSalary(min?: number | null, max?: number | null, currency = 'USD'): string {
+export function formatSalary(min?: number | null, max?: number | null, currency = 'INR'): string {
   if (!min && !max) return '—';
   const sym = getCurrencySymbol(currency);
-  const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(0)}k` : n.toString();
+  const fmt = (n: number) => {
+    if (currency === 'INR' && n >= 100000) {
+      const l = n / 100000;
+      return `${l % 1 === 0 ? l : l.toFixed(1)}L`;
+    }
+    return n >= 1000 ? `${(n / 1000).toFixed(0)}k` : n.toString();
+  };
   if (min && max && min !== max) return `${sym}${fmt(min)} – ${sym}${fmt(max)}`;
   if (min) return `${sym}${fmt(min)}+`;
   if (max) return `Up to ${sym}${fmt(max)}`;
   return '—';
 }
 
-export function getCurrencySymbol(currency = 'USD'): string {
+export function getCurrencySymbol(currency = 'INR'): string {
   const symbols: Record<string, string> = {
-    USD: '$', EUR: '€', GBP: '£', INR: '₹', CAD: 'CA$', AUD: 'AU$',
+    INR: '₹', USD: '$', EUR: '€', GBP: '£', CAD: 'CA$', AUD: 'AU$',
   };
   return symbols[currency.toUpperCase()] ?? `${currency} `;
 }

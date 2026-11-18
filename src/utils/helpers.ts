@@ -41,20 +41,27 @@ export function formatRelative(date: string | Date | null | undefined): string {
 export function formatSalary(
   min?: number | null,
   max?: number | null,
-  currency = 'USD'
+  currency = 'INR'
 ): string | null {
   if (!min && !max) return null;
   const sym = getCurrencySymbol(currency);
+  const fmt = (n: number) => {
+    if (currency === 'INR' && n >= 100000) {
+      const l = n / 100000;
+      return `${l % 1 === 0 ? l : l.toFixed(1)}L`;
+    }
+    return n.toLocaleString();
+  };
   if (min && max) {
-    if (min === max) return `${sym}${min.toLocaleString()}`;
-    return `${sym}${min.toLocaleString()} - ${sym}${max.toLocaleString()}`;
+    if (min === max) return `${sym}${fmt(min)}`;
+    return `${sym}${fmt(min)} - ${sym}${fmt(max)}`;
   }
-  if (min) return `From ${sym}${min.toLocaleString()}`;
-  if (max) return `Up to ${sym}${max.toLocaleString()}`;
+  if (min) return `From ${sym}${fmt(min)}`;
+  if (max) return `Up to ${sym}${fmt(max)}`;
   return null;
 }
 
-export function getCurrencySymbol(currency = 'USD'): string {
+export function getCurrencySymbol(currency = 'INR'): string {
   switch (currency.toUpperCase()) {
     case 'USD':
       return '$';

@@ -111,7 +111,7 @@ export default function ImportExport() {
         work_arrangement: null,
         salary_min: isNaN(salMin) ? null : salMin,
         salary_max: isNaN(salMax) ? null : salMax,
-        currency: get('Currency') || 'USD',
+        currency: get('Currency') || 'INR',
         status,
         source: get('Source') || null,
         applied_at: get('Applied Date') || null,

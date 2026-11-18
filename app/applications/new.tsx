@@ -36,7 +36,7 @@ export default function NewApplicationScreen() {
   const [workArrangement, setWorkArrangement] = useState<WorkArrangement | null>('remote');
   const [salaryMin, setSalaryMin] = useState('');
   const [salaryMax, setSalaryMax] = useState('');
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState('INR');
   const [jobUrl, setJobUrl] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [recruiterName, setRecruiterName] = useState('');
@@ -385,7 +385,7 @@ export default function NewApplicationScreen() {
                 </View>
                 <Input
                   label="Currency"
-                  placeholder="USD"
+                  placeholder="INR"
                   value={currency}
                   onChangeText={setCurrency}
                 />

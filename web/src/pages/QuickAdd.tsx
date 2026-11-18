@@ -36,7 +36,7 @@ export default function QuickAdd() {
       work_arrangement: result.work_arrangement as WorkArrangement | undefined,
       salary_min: result.salary_min?.toString() ?? '',
       salary_max: result.salary_max?.toString() ?? '',
-      currency: result.currency ?? 'USD',
+      currency: result.currency ?? 'INR',
       status: 'saved',
       source: result.source ?? '',
       job_url: url || result.job_url || '',
@@ -68,7 +68,7 @@ export default function QuickAdd() {
         work_arrangement: form.work_arrangement || null,
         salary_min: form.salary_min ? parseFloat(form.salary_min) : null,
         salary_max: form.salary_max ? parseFloat(form.salary_max) : null,
-        currency: form.currency || 'USD',
+        currency: form.currency || 'INR',
         status: form.status ?? 'saved',
         source: form.source || null,
         recruiter_name: null, recruiter_email: null,
@@ -226,8 +226,8 @@ export default function QuickAdd() {
                     <Field label="Salary Max" name="salary_max" type="number" placeholder="e.g. 1800000" />
                     <div>
                       <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-jp-secondary)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Currency</label>
-                      <select value={form.currency ?? 'USD'} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))} style={{ width: '100%', height: 34, padding: '0 6px', border: '1px solid var(--color-jp-border)', borderRadius: 6, fontSize: 13, background: 'var(--color-jp-bg)', color: 'var(--color-jp-text)' }}>
-                        {['USD', 'INR', 'EUR', 'GBP', 'CAD', 'AUD'].map(c => <option key={c} value={c}>{c}</option>)}
+                      <select value={form.currency ?? 'INR'} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))} style={{ width: '100%', height: 34, padding: '0 6px', border: '1px solid var(--color-jp-border)', borderRadius: 6, fontSize: 13, background: 'var(--color-jp-bg)', color: 'var(--color-jp-text)' }}>
+                        {['INR', 'USD', 'EUR', 'GBP', 'CAD', 'AUD'].map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                   </div>

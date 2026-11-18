@@ -131,7 +131,7 @@ export async function restoreBackupData(backup: BackupData): Promise<{ success: 
           [
             a.id, a.company_id, a.job_title, a.job_url ?? null, a.job_description ?? null,
             a.location ?? null, a.employment_type ?? null, a.work_arrangement ?? null,
-            a.salary_min ?? null, a.salary_max ?? null, a.currency || 'USD',
+            a.salary_min ?? null, a.salary_max ?? null, a.currency || 'INR',
             a.status, a.source ?? null, a.recruiter_name ?? null, a.recruiter_email ?? null,
             a.recruiter_phone ?? null, a.recruiter_linkedin ?? null, a.resume_id ?? null,
             a.applied_at ?? null, a.created_at, a.updated_at
