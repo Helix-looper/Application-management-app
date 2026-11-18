@@ -9,8 +9,10 @@ import {
   Check, 
   ArrowDownUp, 
   Clock, 
-  AlertCircle 
+  AlertCircle,
+  QrCode
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { exportBackupData, importBackupData } from '@/lib/db';
 
 interface BridgeStatus {
@@ -308,18 +310,36 @@ export default function Sync() {
                   style={{
                     borderLeft: '1px solid var(--color-jp-border)',
                     paddingLeft: '24px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
                   }}
                 >
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-jp-text)', marginBottom: '8px' }}>
-                    How to Pair on Android:
+                  <div
+                    style={{
+                      background: '#FFFFFF',
+                      padding: '12px',
+                      borderRadius: '12px',
+                      border: '1px solid var(--color-jp-border)',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    <QRCodeSVG
+                      value={JSON.stringify({ url: connectionUrl, pin: status.pin })}
+                      size={130}
+                      level="M"
+                      includeMargin={false}
+                    />
                   </div>
-                  <ol style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: 'var(--color-jp-text-muted)', lineHeight: 1.6 }}>
-                    <li>Ensure phone & desktop are on the same Wi-Fi.</li>
-                    <li>Open <strong>JobPilot</strong> on Android.</li>
-                    <li>Go to <strong>Settings &gt; Desktop Sync</strong>.</li>
-                    <li>Enter this address and PIN.</li>
-                    <li>Tap <strong>Sync Now</strong>.</li>
-                  </ol>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-jp-text)' }}>
+                    Scan with Mobile App
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-jp-text-muted)', marginTop: '2px' }}>
+                    Point camera at this QR code in JobPilot
+                  </div>
                 </div>
               </div>
             </div>

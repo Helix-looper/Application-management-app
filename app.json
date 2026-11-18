@@ -29,6 +29,12 @@
       "expo-sqlite",
       "expo-sharing",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow JobPilot to access your camera to scan desktop sync QR codes."
+        }
+      ],
+      [
         "expo-notifications",
         {
           "icon": "./assets/icon.png",
