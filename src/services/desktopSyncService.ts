@@ -106,43 +106,67 @@ export async function syncWithDesktop(
 
     let importedCount = 0;
 
-    await db.withTransactionAsync(async () => {
-      // Upsert Companies
-      for (const c of desktopCompanies) {
-        await db.runAsync(
-          `INSERT OR REPLACE INTO companies (
-            id, name, website, industry, location, description, company_size,
-            linkedin_url, notes, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-          [
-            c.id, c.name, c.website ?? null, c.industry ?? null, c.location ?? null,
-            c.description ?? null, c.company_size ?? null, c.linkedin_url ?? null,
-            c.notes ?? null, c.created_at, c.updated_at
-          ]
-        );
-      }
+    // Temporarily turn off foreign keys to prevent constraint errors during batch synchronization
+    await db.execAsync('PRAGMA foreign_keys = OFF;');
 
-      // Upsert Applications
-      for (const a of desktopApps) {
-        await db.runAsync(
-          `INSERT OR REPLACE INTO applications (
-            id, company_id, job_title, job_url, job_description, location,
-            employment_type, work_arrangement, salary_min, salary_max, currency,
-            status, source, recruiter_name, recruiter_email, recruiter_phone,
-            recruiter_linkedin, resume_id, applied_at, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-          [
-            a.id, a.company_id, a.job_title, a.job_url ?? null, a.job_description ?? null,
-            a.location ?? null, a.employment_type ?? null, a.work_arrangement ?? null,
-            a.salary_min ?? null, a.salary_max ?? null, a.currency || 'INR',
-            a.status, a.source ?? null, a.recruiter_name ?? null, a.recruiter_email ?? null,
-            a.recruiter_phone ?? null, a.recruiter_linkedin ?? null, a.resume_id ?? null,
-            a.applied_at ?? null, a.created_at, a.updated_at
-          ]
-        );
-        importedCount++;
-      }
-    });
+    try {
+      await db.withTransactionAsync(async () => {
+        // Upsert Companies first
+        for (const c of desktopCompanies) {
+          await db.runAsync(
+            `INSERT OR REPLACE INTO companies (
+              id, name, website, industry, location, description, company_size,
+              linkedin_url, notes, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+            [
+              c.id, c.name, c.website ?? null, c.industry ?? null, c.location ?? null,
+              c.description ?? null, c.company_size ?? null, c.linkedin_url ?? null,
+              c.notes ?? null, c.created_at, c.updated_at
+            ]
+          );
+        }
+
+        // Get local resume IDs to ensure foreign key safety
+        const existingResumes = await db.getAllAsync<{ id: string }>('SELECT id FROM resumes;');
+        const resumeIdSet = new Set(existingResumes.map(r => r.id));
+
+        // Upsert Applications
+        for (const a of desktopApps) {
+          // If company_id is not already in companies, ensure it exists
+          if (a.company_id) {
+            const companyName = (a as any).company_name || 'Company';
+            await db.runAsync(
+              `INSERT OR IGNORE INTO companies (id, name, created_at, updated_at) VALUES (?, ?, ?, ?);`,
+              [a.company_id, companyName, a.created_at, a.updated_at]
+            );
+          }
+
+          // Ensure resume_id is only set if the file actually exists locally
+          const safeResumeId = (a.resume_id && resumeIdSet.has(a.resume_id)) ? a.resume_id : null;
+
+          await db.runAsync(
+            `INSERT OR REPLACE INTO applications (
+              id, company_id, job_title, job_url, job_description, location,
+              employment_type, work_arrangement, salary_min, salary_max, currency,
+              status, source, recruiter_name, recruiter_email, recruiter_phone,
+              recruiter_linkedin, resume_id, applied_at, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+            [
+              a.id, a.company_id, a.job_title, a.job_url ?? null, a.job_description ?? null,
+              a.location ?? null, a.employment_type ?? null, a.work_arrangement ?? null,
+              a.salary_min ?? null, a.salary_max ?? null, a.currency || 'INR',
+              a.status, a.source ?? null, a.recruiter_name ?? null, a.recruiter_email ?? null,
+              a.recruiter_phone ?? null, a.recruiter_linkedin ?? null, safeResumeId,
+              a.applied_at ?? null, a.created_at, a.updated_at
+            ]
+          );
+          importedCount++;
+        }
+      });
+    } finally {
+      // Re-enable foreign keys
+      await db.execAsync('PRAGMA foreign_keys = ON;');
+    }
 
     return {
       success: true,
@@ -159,7 +183,7 @@ export async function syncWithDesktop(
     }
     return {
       success: false,
-      message: 'Network error during sync: ' + (err.message || 'Check your Wi-Fi connection.'),
+      message: 'Database error during sync: ' + (err.message || 'Check your database records.'),
     };
   }
 }
