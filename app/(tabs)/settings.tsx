@@ -346,9 +346,14 @@ export default function SettingsScreen() {
 
             <View style={[styles.divider, { backgroundColor: colors.border, marginVertical: Spacing.md }]} />
 
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: Spacing.xs }}>
+              <Text style={[Typography.secondary, { color: colors.textSecondary }]}>Ecosystem</Text>
+              <Text style={[Typography.secondaryMedium, { color: colors.textPrimary }]}>Android + Desktop Web</Text>
+            </View>
+
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={[Typography.secondary, { color: colors.textSecondary }]}>Version</Text>
-              <Text style={[Typography.secondaryMedium, { color: colors.textPrimary }]}>1.0.0</Text>
+              <Text style={[Typography.secondaryMedium, { color: colors.textPrimary }]}>1.0.0 (Data v1)</Text>
             </View>
           </Card>
         </View>
