@@ -36,9 +36,19 @@ export default function Sync() {
   const [syncing, setSyncing] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
+  const apiFetch = async (path: string, init?: RequestInit) => {
+    try {
+      const res = await fetch(path, init);
+      if (res.ok || res.status === 401 || res.status === 403) return res;
+    } catch {
+      // Fallback to standalone port 3001 if Vite middleware isn't responding
+    }
+    return fetch(`http://localhost:3001${path}`, init);
+  };
+
   const checkStatus = async () => {
     try {
-      const res = await fetch('http://localhost:3001/api/status');
+      const res = await apiFetch('/api/status');
       if (res.ok) {
         const data = await res.json();
         setStatus(data);
@@ -49,7 +59,7 @@ export default function Sync() {
       }
     } catch {
       setStatus(null);
-      setError('Sync bridge not detected on port 3001. Run "npm run sync" in the web directory.');
+      setError('Sync bridge not detected. Ensure "npm run dev" or "npm run sync" is running.');
     }
   };
 
@@ -62,7 +72,7 @@ export default function Sync() {
   const handleRefreshPin = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/refresh-pin', { method: 'POST' });
+      const res = await apiFetch('/api/refresh-pin', { method: 'POST' });
       if (res.ok) {
         await checkStatus();
       }
@@ -78,7 +88,7 @@ export default function Sync() {
     setFeedback(null);
     try {
       const localData = await exportBackupData();
-      const res = await fetch('http://localhost:3001/api/desktop-data', {
+      const res = await apiFetch('/api/desktop-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(localData),
@@ -100,7 +110,7 @@ export default function Sync() {
     setSyncing(true);
     setFeedback(null);
     try {
-      const res = await fetch('http://localhost:3001/api/desktop-data');
+      const res = await apiFetch('/api/desktop-data');
       if (res.ok) {
         const json = await res.json();
         if (json.data && json.data.applications) {

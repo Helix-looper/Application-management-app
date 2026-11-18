@@ -1,13 +1,12 @@
-// @ts-check
-const http = require('http');
-const os = require('os');
+import http from 'http';
+import os from 'os';
 
-const PORT = 3001;
+export const PORT = 3001;
 
-// State in sync bridge
-let sessionPin = Math.floor(1000 + Math.random() * 9000).toString();
-let authToken = 'jp_' + Math.random().toString(36).substring(2, 12);
-let desktopData = {
+// In-memory sync state
+export let sessionPin = Math.floor(1000 + Math.random() * 9000).toString();
+export let authToken = 'jp_' + Math.random().toString(36).substring(2, 12);
+export let desktopData = {
   version: 1,
   companies: [],
   applications: [],
@@ -16,14 +15,14 @@ let desktopData = {
   status_history: [],
   reminders: [],
 };
-let lastSync = {
+export let lastSync = {
   timestamp: null,
   device: null,
   importedCount: 0,
   exportedCount: 0,
 };
 
-function getLocalIp() {
+export function getLocalIp() {
   const interfaces = os.networkInterfaces();
   for (const name of Object.keys(interfaces)) {
     for (const iface of interfaces[name] || []) {
@@ -61,7 +60,14 @@ function parseJsonBody(req) {
   });
 }
 
-const server = http.createServer(async (req, res) => {
+export async function handleSyncRequest(req, res, activePort = PORT) {
+  const url = req.url || '';
+
+  // Only handle /api endpoints
+  if (!url.startsWith('/api/')) {
+    return false;
+  }
+
   // CORS Preflight
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
@@ -69,29 +75,30 @@ const server = http.createServer(async (req, res) => {
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     });
-    return res.end();
+    res.end();
+    return true;
   }
 
-  const url = req.url || '';
-
-  // Status & discovery endpoint
-  if (req.method === 'GET' && url.startsWith('/api/status')) {
-    return sendJson(res, 200, {
+  // Status & discovery
+  if (req.method === 'GET' && (url === '/api/status' || url.startsWith('/api/status?'))) {
+    sendJson(res, 200, {
       ok: true,
       service: 'JobPilot Desktop Sync Bridge',
       version: '1.0.0',
       ip: getLocalIp(),
-      port: PORT,
+      port: activePort,
       pin: sessionPin,
       lastSync,
     });
+    return true;
   }
 
-  // Regenerate PIN
+  // Refresh PIN
   if (req.method === 'POST' && url === '/api/refresh-pin') {
     sessionPin = Math.floor(1000 + Math.random() * 9000).toString();
     authToken = 'jp_' + Math.random().toString(36).substring(2, 12);
-    return sendJson(res, 200, { ok: true, pin: sessionPin });
+    sendJson(res, 200, { ok: true, pin: sessionPin });
+    return true;
   }
 
   // Pair from Mobile
@@ -99,17 +106,18 @@ const server = http.createServer(async (req, res) => {
     try {
       const body = await parseJsonBody(req);
       if (body.pin === sessionPin) {
-        return sendJson(res, 200, {
+        sendJson(res, 200, {
           ok: true,
           token: authToken,
           message: 'Paired successfully with JobPilot Desktop',
         });
       } else {
-        return sendJson(res, 401, { ok: false, error: 'Invalid pairing PIN' });
+        sendJson(res, 401, { ok: false, error: 'Invalid pairing PIN' });
       }
     } catch {
-      return sendJson(res, 400, { ok: false, error: 'Malformed request body' });
+      sendJson(res, 400, { ok: false, error: 'Malformed request body' });
     }
+    return true;
   }
 
   // Desktop pushes its IndexedDB state to the sync bridge
@@ -125,35 +133,38 @@ const server = http.createServer(async (req, res) => {
         status_history: body.status_history || [],
         reminders: body.reminders || [],
       };
-      return sendJson(res, 200, {
+      sendJson(res, 200, {
         ok: true,
         applicationsCount: desktopData.applications.length,
         companiesCount: desktopData.companies.length,
       });
-    } catch (e) {
-      return sendJson(res, 400, { ok: false, error: 'Invalid data payload' });
+    } catch {
+      sendJson(res, 400, { ok: false, error: 'Invalid data payload' });
     }
+    return true;
   }
 
   // Read desktop data
   if (req.method === 'GET' && url === '/api/desktop-data') {
-    return sendJson(res, 200, { ok: true, data: desktopData });
+    sendJson(res, 200, { ok: true, data: desktopData });
+    return true;
   }
 
   // Mobile Sync Endpoint (bidirectional)
   if (req.method === 'POST' && url === '/api/sync') {
-    try {
-      const auth = req.headers['authorization'];
-      const token = auth && auth.startsWith('Bearer ') ? auth.slice(7) : null;
-      if (token !== authToken) {
-        return sendJson(res, 403, { ok: false, error: 'Unauthorized. Please pair with the current PIN.' });
-      }
+    const auth = req.headers['authorization'];
+    const token = auth && auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (token !== authToken) {
+      sendJson(res, 403, { ok: false, error: 'Unauthorized. Please pair with the current PIN.' });
+      return true;
+    }
 
+    try {
       const mobilePayload = await parseJsonBody(req);
       const mobileApps = mobilePayload.applications || [];
       const mobileCompanies = mobilePayload.companies || [];
 
-      // Merge mobile applications into desktop data buffer (if mobile has newer or unseen)
+      // Merge mobile applications
       const existingAppIds = new Set(desktopData.applications.map(a => a.id));
       let newFromMobile = 0;
       for (const mApp of mobileApps) {
@@ -175,32 +186,42 @@ const server = http.createServer(async (req, res) => {
 
       lastSync = {
         timestamp: new Date().toISOString(),
-        device: mobilePayload.device || 'Android Device',
+        device: mobilePayload.device || 'Android Phone',
         importedCount: newFromMobile,
         exportedCount: desktopData.applications.length,
       };
 
-      // Return complete merged dataset back to mobile
-      return sendJson(res, 200, {
+      sendJson(res, 200, {
         ok: true,
         data: desktopData,
         syncedAt: lastSync.timestamp,
         newFromMobile,
       });
     } catch (e) {
-      return sendJson(res, 500, { ok: false, error: 'Sync processing failed: ' + String(e) });
+      sendJson(res, 500, { ok: false, error: 'Sync failed: ' + String(e) });
     }
+    return true;
   }
 
-  // 404 Fallback
-  return sendJson(res, 404, { ok: false, error: 'Endpoint not found' });
-});
+  return false;
+}
 
-server.listen(PORT, '0.0.0.0', () => {
-  const ip = getLocalIp();
-  console.log(`\n======================================================`);
-  console.log(`  JobPilot Local Wi-Fi Sync Bridge is RUNNING`);
-  console.log(`  Local Network URL : http://${ip}:${PORT}`);
-  console.log(`  Pairing PIN       : ${sessionPin}`);
-  console.log(`======================================================\n`);
-});
+// Standalone runner when executed directly via node
+const isMain = process.argv[1] && process.argv[1].endsWith('sync-server.js');
+if (isMain) {
+  const server = http.createServer(async (req, res) => {
+    const handled = await handleSyncRequest(req, res, PORT);
+    if (!handled) {
+      sendJson(res, 404, { ok: false, error: 'Endpoint not found' });
+    }
+  });
+
+  server.listen(PORT, '0.0.0.0', () => {
+    const ip = getLocalIp();
+    console.log(`\n======================================================`);
+    console.log(`  JobPilot Local Wi-Fi Sync Bridge is RUNNING`);
+    console.log(`  Local Network URL : http://${ip}:${PORT}`);
+    console.log(`  Pairing PIN       : ${sessionPin}`);
+    console.log(`======================================================\n`);
+  });
+}
