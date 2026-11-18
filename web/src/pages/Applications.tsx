@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Trash2, ChevronDown, Filter, ArrowUpDown } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, Filter, ArrowUpDown, Zap } from 'lucide-react';
 import { TopBar } from '@/components/TopBar';
 import { StatusBadge } from '@/components/StatusBadge';
 import { CompanyAvatar } from '@/components/CompanyAvatar';
@@ -136,9 +136,47 @@ export default function Applications() {
               </>
             )}
 
-            <Link to="/quick-add">
-              <button style={{ height: 32, padding: '0 14px', borderRadius: 6, background: 'var(--color-jp-accent)', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Plus size={14} /> Add
+            <Link to="/quick-add" style={{ textDecoration: 'none' }}>
+              <button
+                type="button"
+                style={{
+                  height: 32,
+                  padding: '0 12px',
+                  borderRadius: 6,
+                  background: 'var(--color-jp-surface)',
+                  color: 'var(--color-jp-text)',
+                  border: '1px solid var(--color-jp-border)',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <Zap size={13} color="var(--color-jp-accent)" /> Quick Add
+              </button>
+            </Link>
+
+            <Link to="/applications/new" style={{ textDecoration: 'none' }}>
+              <button
+                type="button"
+                style={{
+                  height: 32,
+                  padding: '0 14px',
+                  borderRadius: 6,
+                  background: 'var(--color-jp-accent)',
+                  color: '#fff',
+                  border: 'none',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <Plus size={14} /> New Application
               </button>
             </Link>
           </div>
@@ -150,7 +188,26 @@ export default function Applications() {
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--color-jp-secondary)', fontSize: 14 }}>Loading…</div>
         ) : filtered.length === 0 ? (
           <div style={{ padding: 60, textAlign: 'center', color: 'var(--color-jp-secondary)', fontSize: 14 }}>
-            {apps.length === 0 ? 'No applications yet. Use Quick Add to create your first.' : 'No results match your filters.'}
+            {apps.length === 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+                <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--color-jp-text)' }}>No applications yet</div>
+                <div style={{ fontSize: 13, maxWidth: 380, margin: '0 auto' }}>
+                  Track your job opportunities manually or paste a full job posting to parse details automatically.
+                </div>
+                <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                  <Link to="/applications/new" style={{ textDecoration: 'none' }}>
+                    <button style={{ height: 36, padding: '0 16px', borderRadius: 8, background: 'var(--color-jp-accent)', color: '#fff', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Plus size={14} /> New Application
+                    </button>
+                  </Link>
+                  <Link to="/quick-add" style={{ textDecoration: 'none' }}>
+                    <button style={{ height: 36, padding: '0 16px', borderRadius: 8, background: 'var(--color-jp-surface)', color: 'var(--color-jp-text)', border: '1px solid var(--color-jp-border)', fontSize: 13, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Zap size={14} color="var(--color-jp-accent)" /> Quick Add
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            ) : 'No results match your filters.'}
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>

@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
 import Dashboard from '@/pages/Dashboard';
 import Applications from '@/pages/Applications';
+import ApplicationNew from '@/pages/ApplicationNew';
 import ApplicationDetail from '@/pages/ApplicationDetail';
 import QuickAdd from '@/pages/QuickAdd';
 import Companies from '@/pages/Companies';
@@ -36,6 +37,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/applications" element={<Applications />} />
+          <Route path="/applications/new" element={<ApplicationNew />} />
           <Route path="/applications/:id" element={<ApplicationDetail />} />
           <Route path="/quick-add" element={<QuickAdd />} />
           <Route path="/companies" element={<Companies />} />

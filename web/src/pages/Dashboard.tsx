@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, Briefcase, Building2, TrendingUp, ArrowRight } from 'lucide-react';
+import { Zap, Briefcase, Building2, TrendingUp, ArrowRight, Plus } from 'lucide-react';
 import { TopBar } from '@/components/TopBar';
 import { StatusBadge } from '@/components/StatusBadge';
 import { CompanyAvatar } from '@/components/CompanyAvatar';
@@ -41,9 +41,12 @@ export default function Dashboard() {
         </div>
 
         {/* Quick actions */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 28 }}>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 28, flexWrap: 'wrap' }}>
+          <Link to="/applications/new" style={{ textDecoration: 'none' }}>
+            <QuickAction icon={<Plus size={16} />} label="New Application" primary />
+          </Link>
           <Link to="/quick-add" style={{ textDecoration: 'none' }}>
-            <QuickAction icon={<Zap size={16} />} label="Quick Add" primary />
+            <QuickAction icon={<Zap size={16} />} label="Quick Add" />
           </Link>
           <Link to="/applications" style={{ textDecoration: 'none' }}>
             <QuickAction icon={<Briefcase size={16} />} label="All Applications" />
@@ -201,14 +204,25 @@ function EmptyDashboard() {
       <div style={{ fontSize: 14, color: 'var(--color-jp-secondary)', marginBottom: 20, maxWidth: 320 }}>
         Paste a job description to create your first opportunity, or import existing applications from a CSV or JSON backup.
       </div>
-      <div style={{ display: 'flex', gap: 10 }}>
-        <Link to="/quick-add">
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <Link to="/applications/new" style={{ textDecoration: 'none' }}>
           <button style={{
             padding: '8px 16px', borderRadius: 8, background: 'var(--color-jp-accent)', color: '#fff',
-            border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-          }}>Quick Add</button>
+            border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <Plus size={14} /> New Application
+          </button>
         </Link>
-        <Link to="/import">
+        <Link to="/quick-add" style={{ textDecoration: 'none' }}>
+          <button style={{
+            padding: '8px 16px', borderRadius: 8, background: 'var(--color-jp-surface)',
+            border: '1px solid var(--color-jp-border)', color: 'var(--color-jp-text)',
+            fontSize: 13, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <Zap size={14} color="var(--color-jp-accent)" /> Quick Add
+          </button>
+        </Link>
+        <Link to="/import" style={{ textDecoration: 'none' }}>
           <button style={{
             padding: '8px 16px', borderRadius: 8, background: 'var(--color-jp-surface)',
             border: '1px solid var(--color-jp-border)', color: 'var(--color-jp-text)',
