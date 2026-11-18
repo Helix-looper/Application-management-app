@@ -48,9 +48,13 @@ export default function ApplicationNew() {
   const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const autocompleteRef = useRef<HTMLDivElement>(null);
+  const jobTitleInputRef = useRef<HTMLInputElement>(null);
+  const companyNameInputRef = useRef<HTMLInputElement>(null);
 
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{ jobTitle?: string; companyName?: string }>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
     getAllCompanies().then(setExistingCompanies).catch(() => {});
@@ -67,9 +71,10 @@ export default function ApplicationNew() {
   const handleCompanyNameChange = (text: string) => {
     setCompanyName(text);
     if (errors.companyName) setErrors(e => ({ ...e, companyName: undefined }));
+    if (formError) setFormError(null);
     if (text.trim().length > 0) {
       const matches = existingCompanies.filter(c =>
-        c.name.toLowerCase().includes(text.toLowerCase())
+        c?.name && c.name.toLowerCase().includes(text.toLowerCase())
       );
       setFilteredCompanies(matches);
       setShowSuggestions(matches.length > 0);
@@ -86,8 +91,12 @@ export default function ApplicationNew() {
     setShowSuggestions(false);
   };
 
-  const handleSave = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const handleSave = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
+
+    setFormError(null);
 
     const errs: { jobTitle?: string; companyName?: string } = {};
     if (!jobTitle.trim()) errs.jobTitle = 'Job title is required';
@@ -95,6 +104,14 @@ export default function ApplicationNew() {
 
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
+      setFormError('Please fill in required fields: Job Title and Company Name');
+      if (!jobTitle.trim()) {
+        jobTitleInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        jobTitleInputRef.current?.focus();
+      } else if (!companyName.trim()) {
+        companyNameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        companyNameInputRef.current?.focus();
+      }
       return;
     }
 
@@ -102,7 +119,9 @@ export default function ApplicationNew() {
     try {
       // 1. Get or create company
       const companies = await getAllCompanies();
-      let company = companies.find(c => c.name.toLowerCase() === companyName.trim().toLowerCase());
+      let company = companies.find(
+        c => c?.name && c.name.toLowerCase() === companyName.trim().toLowerCase()
+      );
       if (!company) {
         company = await upsertCompany({
           name: companyName.trim(),
@@ -110,11 +129,19 @@ export default function ApplicationNew() {
         });
       }
 
-      // 2. Parse numbers
-      const parsedMin = salaryMin.trim() ? parseFloat(salaryMin) : undefined;
-      const parsedMax = salaryMax.trim() ? parseFloat(salaryMax) : undefined;
+      // 2. Parse numbers cleanly (remove commas if entered)
+      const cleanMin = salaryMin.replace(/,/g, '').trim();
+      const cleanMax = salaryMax.replace(/,/g, '').trim();
+      const parsedMin = cleanMin && !isNaN(Number(cleanMin)) ? Number(cleanMin) : null;
+      const parsedMax = cleanMax && !isNaN(Number(cleanMax)) ? Number(cleanMax) : null;
 
-      // 3. Create application
+      // 3. Format job URL if provided
+      let formattedUrl = jobUrl.trim();
+      if (formattedUrl && !/^https?:\/\//i.test(formattedUrl)) {
+        formattedUrl = 'https://' + formattedUrl;
+      }
+
+      // 4. Create application
       const newApp = await createApplication({
         company_id: company.id,
         job_title: jobTitle.trim(),
@@ -122,10 +149,10 @@ export default function ApplicationNew() {
         location: location.trim() || null,
         employment_type: employmentType || null,
         work_arrangement: workArrangement || null,
-        salary_min: parsedMin ?? null,
-        salary_max: parsedMax ?? null,
+        salary_min: parsedMin,
+        salary_max: parsedMax,
         currency,
-        job_url: jobUrl.trim() || null,
+        job_url: formattedUrl || null,
         job_description: jobDescription.trim() || null,
         recruiter_name: recruiterName.trim() || null,
         recruiter_email: recruiterEmail.trim() || null,
@@ -135,9 +162,13 @@ export default function ApplicationNew() {
         source: null,
       });
 
-      navigate(`/applications/${newApp.id}`);
+      setSuccessMsg('Opportunity saved successfully! Redirecting...');
+      setTimeout(() => {
+        navigate(`/applications/${newApp.id}`);
+      }, 400);
     } catch (err: any) {
-      alert('Failed to save application: ' + (err.message || 'Unknown error'));
+      console.error('Failed to save application:', err);
+      setFormError('Failed to save application: ' + (err.message || 'Unknown error'));
       setSaving(false);
     }
   };
@@ -182,23 +213,23 @@ export default function ApplicationNew() {
             </button>
             <button
               type="button"
-              onClick={() => handleSave()}
+              onClick={handleSave}
               disabled={saving}
               style={{
                 padding: '6px 18px',
                 borderRadius: 6,
                 border: 'none',
-                background: 'var(--color-jp-accent)',
+                background: saving ? 'var(--color-jp-secondary)' : 'var(--color-jp-accent)',
                 color: '#fff',
                 fontSize: 13,
                 fontWeight: 600,
-                cursor: 'pointer',
+                cursor: saving ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
               }}
             >
-              {saving ? 'Saving...' : 'Save Application'}
+              {saving ? 'Saving...' : 'Save Opportunity'}
             </button>
           </div>
         }
@@ -224,7 +255,51 @@ export default function ApplicationNew() {
         </div>
 
         {/* Form Container */}
-        <form onSubmit={handleSave}>
+        <form noValidate onSubmit={handleSave}>
+          {/* Top Error Alert */}
+          {formError && (
+            <div
+              style={{
+                marginBottom: 16,
+                padding: '12px 16px',
+                borderRadius: 8,
+                background: 'var(--color-status-rejected-bg)',
+                border: '1px solid var(--color-status-rejected)',
+                color: 'var(--color-status-rejected)',
+                fontSize: 13,
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <AlertCircle size={16} />
+              <span>{formError}</span>
+            </div>
+          )}
+
+          {/* Top Success Alert */}
+          {successMsg && (
+            <div
+              style={{
+                marginBottom: 16,
+                padding: '12px 16px',
+                borderRadius: 8,
+                background: 'var(--color-status-offer-bg)',
+                border: '1px solid var(--color-status-offer)',
+                color: 'var(--color-status-offer)',
+                fontSize: 13,
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <Check size={16} />
+              <span>{successMsg}</span>
+            </div>
+          )}
+
           {/* Section 1: Core Opportunity Info */}
           <section
             style={{
@@ -258,12 +333,14 @@ export default function ApplicationNew() {
                 Job Title <span style={{ color: 'var(--color-status-rejected)' }}>*</span>
               </label>
               <input
+                ref={jobTitleInputRef}
                 type="text"
                 placeholder="e.g. Senior Full-Stack Engineer"
                 value={jobTitle}
                 onChange={e => {
                   setJobTitle(e.target.value);
                   if (errors.jobTitle) setErrors(err => ({ ...err, jobTitle: undefined }));
+                  if (formError) setFormError(null);
                 }}
                 autoFocus
                 style={{
@@ -301,6 +378,7 @@ export default function ApplicationNew() {
                 Company Name <span style={{ color: 'var(--color-status-rejected)' }}>*</span>
               </label>
               <input
+                ref={companyNameInputRef}
                 type="text"
                 placeholder="e.g. Stripe, Razorpay, Google"
                 value={companyName}
@@ -596,8 +674,8 @@ export default function ApplicationNew() {
                       Salary Minimum
                     </label>
                     <input
-                      type="number"
-                      placeholder="e.g. 1200000"
+                      type="text"
+                      placeholder="e.g. 1200000 or 12,00,000"
                       value={salaryMin}
                       onChange={e => setSalaryMin(e.target.value)}
                       style={{
@@ -619,8 +697,8 @@ export default function ApplicationNew() {
                       Salary Maximum
                     </label>
                     <input
-                      type="number"
-                      placeholder="e.g. 1800000"
+                      type="text"
+                      placeholder="e.g. 1800000 or 18,00,000"
                       value={salaryMax}
                       onChange={e => setSalaryMax(e.target.value)}
                       style={{
@@ -739,7 +817,7 @@ export default function ApplicationNew() {
                     Recruiter Email
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     placeholder="recruiter@company.com"
                     value={recruiterEmail}
                     onChange={e => setRecruiterEmail(e.target.value)}
@@ -825,8 +903,8 @@ export default function ApplicationNew() {
                     Job Posting URL
                   </label>
                   <input
-                    type="url"
-                    placeholder="https://careers.company.com/job/12345"
+                    type="text"
+                    placeholder="e.g. https://careers.company.com/job/12345 or company.com/job"
                     value={jobUrl}
                     onChange={e => setJobUrl(e.target.value)}
                     style={{
@@ -871,6 +949,50 @@ export default function ApplicationNew() {
             )}
           </section>
 
+          {/* Bottom Error Alert */}
+          {formError && (
+            <div
+              style={{
+                marginBottom: 16,
+                padding: '12px 16px',
+                borderRadius: 8,
+                background: 'var(--color-status-rejected-bg)',
+                border: '1px solid var(--color-status-rejected)',
+                color: 'var(--color-status-rejected)',
+                fontSize: 13,
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <AlertCircle size={16} />
+              <span>{formError}</span>
+            </div>
+          )}
+
+          {/* Bottom Success Alert */}
+          {successMsg && (
+            <div
+              style={{
+                marginBottom: 16,
+                padding: '12px 16px',
+                borderRadius: 8,
+                background: 'var(--color-status-offer-bg)',
+                border: '1px solid var(--color-status-offer)',
+                color: 'var(--color-status-offer)',
+                fontSize: 13,
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <Check size={16} />
+              <span>{successMsg}</span>
+            </div>
+          )}
+
           {/* Bottom Action Bar */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginBottom: 40 }}>
             <button
@@ -889,17 +1011,18 @@ export default function ApplicationNew() {
               Cancel
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSave}
               disabled={saving}
               style={{
                 padding: '10px 28px',
                 borderRadius: 8,
                 border: 'none',
-                background: 'var(--color-jp-accent)',
+                background: saving ? 'var(--color-jp-secondary)' : 'var(--color-jp-accent)',
                 color: '#fff',
                 fontSize: 14,
                 fontWeight: 600,
-                cursor: 'pointer',
+                cursor: saving ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
